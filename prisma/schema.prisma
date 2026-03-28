@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id Int                @id @default(autoincrement())
+  email String          @unique
+  password String
+  name String?
+
+  // Relations
+  todoLists TodoList[]  @relation("UserAndLists")
+  completedItems TodoListItem[] @relation("CompletedBy")
+  sharedLists SharedList[]
+}
+
+model TodoList {
+  id Int                @id @default(autoincrement())
+  title String
+  created_at DateTime   @default(now())
+  public_list Boolean   @default(false)
+
+  // Foreign key
+  created_by  Int
+  user User             @relation("UserAndLists", fields: [created_by], references: [id])
+
+  // Relations
+  list_items TodoListItem[] @relation("ListAndItems")
+  shared_with SharedList[]
+}
+
+model TodoListItem {
+  id              Int       @id @default(autoincrement())
+  task            String
+  completed       Boolean   @default(false)
+
+  created_at      DateTime  @default(now())
+  updated_at      DateTime?
+  due_date        DateTime?
+  completed_date  DateTime?
+
+  // Foreign key → TodoList
+  list_id         Int
+  list            TodoList  @relation("ListAndItems", fields: [list_id], references: [id], onDelete: Cascade)
+
+  // Foreign key → User (nullable)
+  completed_by    Int?
+  completedBy     User?     @relation("CompletedBy", fields: [completed_by], references: [id])  
+}
+
+model SharedList {
+  list_id     Int
+  shared_with Int
+
+  // Relations
+  list        TodoList @relation(fields: [list_id], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [shared_with], references: [id])
+
+  @@id([list_id, shared_with]) // Composite Primary Key
+}
+

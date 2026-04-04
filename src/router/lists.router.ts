@@ -77,6 +77,10 @@ router.get("/:list_id", OptionalAuth, async (req:AuthenticatedRequest, res, next
         const listId = Number(req.params.list_id);
         //const userId = req.user?.sub || null;   // null = not logged in
 
+        if(!Number.isInteger(listId) || listId <= 0) {
+            throw new httpError(404, "Invalid list Id");
+        }
+
         const list = await prismaDB.todoList.findUnique({
             where: { id: listId },
             include: {

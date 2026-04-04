@@ -134,15 +134,15 @@ router.post("/:list_id/item",RequiresAuth, validateBody, async(req:Authenticated
 router.get("/:list_id/item/:itemId",OptionalAuth, async (req:AuthenticatedRequest, res, next) => {
    
     const listId = Number(req.params.list_id);
-    const itmeId = Number(req.params.itemId);
+    const itemId = Number(req.params.itemId);
 
     let userId: number | null = null;
 
-    if(!listId){
+    if(!Number.isInteger(listId) || listId <= 0){
         return next(new httpError(404, "Invalid list Id"));
     }
 
-    if(!itmeId){
+    if(!Number.isInteger(itemId) || itemId <= 0){
         return next(new httpError(404, "Invalid item Id"));
     }
 
@@ -178,7 +178,7 @@ router.get("/:list_id/item/:itemId",OptionalAuth, async (req:AuthenticatedReques
 
     const item = await prismaDB.todoListItem.findFirst({
         where: {
-            id: itmeId,
+            id: itemId,
             list_id: listId
         },
         include: {
